@@ -122,12 +122,13 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [ 
+STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static_files")
 ]
 
 LOGIN_URL = 'rest_framework:login'
 LOGOUT_URL = 'rest_framework:logout'
+
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS':

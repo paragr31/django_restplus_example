@@ -8,6 +8,7 @@ from .serializers import SnippetSerializer, UserSerializer
 from rest_framework import permissions
 from .permissions import IsOwnerOrReadOnly
 from rest_framework import renderers
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -18,14 +19,15 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserSerializer
 
 
-class SnippetViewSet(viewsets.ModelViewSet):
+class SnippetViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
     """
     This viewset automatically provides 'list', 'create', 'retrieve',
     'update' and 'destroy' actions.
     """
+    login_url = '/api-auth/login/'
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+    permission_classes = (permissions.IsAuthenticated,
                           IsOwnerOrReadOnly,)
 
     @detail_route(renderer_classes=[renderers.StaticHTMLRenderer])
