@@ -24,7 +24,6 @@ class SnippetViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
     This viewset automatically provides 'list', 'create', 'retrieve',
     'update' and 'destroy' actions.
     """
-    login_url = '/api-auth/login/'
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
     permission_classes = (permissions.IsAuthenticated,
