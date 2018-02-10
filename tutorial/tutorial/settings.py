@@ -11,7 +11,36 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
+import ldap
+import sys
+from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
 
+AUTH_LDAP_SERVER_URI = "ldap://192.168.56.16:389"
+AUTH_LDAP_BIND_DN = "cn=admin,dc=test,dc=com"
+AUTH_LDAP_BIND_PASSWORD = "admin"
+AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=test,dc=com",
+    ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+# or perhaps:
+# AUTH_LDAP_USER_DN_TEMPLATE = "uid=%(user)s,ou=users,dc=example,dc=com"
+
+# Set up the basic group parameters.
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch("cn=django,ou=groups,dc=test,dc=com",
+    ldap.SCOPE_SUBTREE, "(objectClass=posixGroup)"
+)
+AUTH_LDAP_GROUP_TYPE = GroupOfNamesType(name_attr="cn")
+
+# Populate the Django user from the LDAP directory.
+AUTH_LDAP_USER_ATTR_MAP = {
+    "first_name": "givenName",
+    "last_name": "sn",
+    "email": "mail",
+}
+# Keep ModelBackend around for per-user permissions and maybe a local
+# superuser.
+AUTHENTICATION_BACKENDS = (
+    'django_auth_ldap.backend.LDAPBackend',
+	'django.contrib.auth.backends.ModelBackend',
+)
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -27,7 +56,21 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+############################## django-auth-ldap logging ##############################
+if DEBUG:
+    import logging, logging.handlers
+    logfile = BASE_DIR + "\\django-ldap-debug.log"
+    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    my_logger = logging.getLogger('django_auth_ldap')
+    my_logger.setLevel(logging.DEBUG)
 
+    handler = logging.handlers.RotatingFileHandler(
+       logfile, maxBytes=1024 * 500, backupCount=5)
+       
+    handler.setFormatter(formatter)
+
+    my_logger.addHandler(handler)
+############################ end django-auth-ldap logging ############################
 # Application definition
 
 INSTALLED_APPS = [
