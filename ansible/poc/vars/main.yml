@@ -1,0 +1,4 @@
+---
+# vars file for poc
+jira_list : ["SUMMITRM-345","SUMMITRM-346"]
+folders_list : ["Tree","Auto_DB","ControlM"]

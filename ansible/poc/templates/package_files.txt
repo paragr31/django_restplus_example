@@ -1,0 +1,17 @@
+{% for jira in jira_list %}
+{% for folder in folders_list %}
+--------------------------------------------------------------------------
+JIRA {{jira}}  {{folder}} Files
+--------------------------------------------------------------------------
+{% for item in tree_files.results %}
+{% if item.item[0] == jira and item.item[1] == folder %}
+{% for file in item.files %}
+File Name          : {{file.path}}
+File Modified Time : {{ '%Y-%m-%d %H:%M:%S' | strftime(file.mtime) }}
+File Size          : {{file.size}}
+{% endfor %}
+{% endif %}
+{% endfor %}
+--------------------------------------------------------------------------
+{% endfor %}
+{% endfor %}

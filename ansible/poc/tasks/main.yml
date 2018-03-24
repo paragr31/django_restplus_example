@@ -1,0 +1,43 @@
+---
+# tasks file for poc
+# - name: find files in /root/ansible_poc/downloaded_files
+  # find:
+    # path: /root/ansible_poc/downloaded_files/SUMMITRM-345/{{item}}
+    # recurse: yes
+  # with_items:
+    # - Tree
+    # - Auto_DB
+    # - ControlM
+  # register: tree_files
+  
+# - debug:
+    # msg: "{{tree_files}}"
+
+# - template:
+    # src : tree_files.txt
+    # dest : "/var/log/tree_files_list.txt"
+  # when: "tree_files.results"
+  
+# - debug:
+    # msg: "{{item}}"
+  # with_nested:
+    # - ["SUMMITRM-345","SUMMITRM-346"]
+    # - ["Tree","Auto_DB","ControlM"]
+    
+- name: find files in /root/ansible_poc/downloaded_files
+  find:
+    path: "/root/ansible_poc/downloaded_files/{{item[0]}}/{{item[1]}}"
+    recurse: yes
+  with_nested:
+    - "{{jira_list}}"
+    - "{{folders_list}}"
+  register: tree_files
+
+# - copy:
+    # dest : /root/ansible_poc/downloaded_files/tree_files_var.txt
+    # content: "{{tree_files}}"
+    
+- template:
+    src : package_files.txt
+    dest : "/root/ansible_poc/downloaded_files/package_files.txt"
+  when: "tree_files.results"  

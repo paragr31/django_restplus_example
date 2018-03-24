@@ -1,0 +1,32 @@
+{% for item in tree_files.results %}
+{% if item.item == "Tree" %}
+-------------------------------------------------
+Tree Files List :
+-------------------------------------------------
+{% for file in item.files %}
+File Name          : {{file.path}}
+File Modified Time : {{ '%Y-%m-%d %H:%M:%S' | strftime(file.mtime) }}
+{% endfor %}
+-------------------------------------------------
+{% endif %}
+{% if item.item == "Auto_DB" %}
+-------------------------------------------------
+Auto_DB Files List :
+-------------------------------------------------
+{% for file in item.files %}
+File Name          : {{file.path}}
+File Modified Time : {{ '%Y-%m-%d %H:%M:%S' | strftime(file.mtime) }}
+{% endfor %}
+-------------------------------------------------
+{% endif %}
+{% if item.item == "ControlM" %}
+-------------------------------------------------
+ControlM Files List :
+-------------------------------------------------
+{% for file in item.files %}
+File Name          : {{file.path}}
+File Modified Time : {{ '%Y-%m-%d %H:%M:%S' | strftime(file.mtime) }}
+{% endfor %}
+-------------------------------------------------
+{% endif %}
+{% endfor %}
