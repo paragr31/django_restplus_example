@@ -45,7 +45,7 @@ dask==0.16.1
 datashape==0.5.4
 decorator==4.2.1
 distributed==1.20.2
-Django==1.11
+Django==1.11.28
 django-auth-ldap==1.4.0
 django-filter==1.1.0
 django-rest-swagger==2.1.2
