@@ -1,0 +1,93 @@
+package main
+
+import (
+	"log"
+	"os"
+)
+
+// LogLevel represents the log level.
+type LogLevel int
+
+const (
+	// Info log level.
+	Info LogLevel = iota
+	// Debug log level.
+	Debug
+	// Warning log level.
+	Warning
+	// Fatal log level.
+	Fatal
+)
+
+var logLevelPrefix = map[LogLevel]string{
+	Info:    "[INFO] ",
+	Debug:   "[DEBUG] ",
+	Warning: "[WARNING] ",
+	Fatal:   "[FATAL] ",
+}
+
+func main() {
+	// Set log flags to include date, time, filename, and line number.
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+
+	// Log some example messages at different log levels.
+	LogInfo("This is an info log message.")
+	LogDebug("This is a debug log message.")
+	LogWarning("This is a warning log message.")
+	LogFatal("This is a fatal log message. The application will terminate after this.")
+
+	// You can also create a custom logger with specific output settings.
+	logFile, err := os.OpenFile("application.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatal("Failed to open log file:", err)
+	}
+	defer logFile.Close()
+
+	customLogger := log.New(logFile, "CUSTOMLOG: ", log.Ldate|log.Ltime|log.Lshortfile)
+
+	// Log some messages using the custom logger at different log levels.
+	CustomLogInfo(customLogger, "Custom info log message.")
+	CustomLogDebug(customLogger, "Custom debug log message.")
+	CustomLogWarning(customLogger, "Custom warning log message.")
+	CustomLogFatal(customLogger, "Custom fatal log message. The application will terminate after this.")
+}
+
+// LogInfo logs an info level message.
+func LogInfo(message string) {
+	log.Println(logLevelPrefix[Info] + message)
+}
+
+// LogDebug logs a debug level message.
+func LogDebug(message string) {
+	log.Println(logLevelPrefix[Debug] + message)
+}
+
+// LogWarning logs a warning level message.
+func LogWarning(message string) {
+	log.Println(logLevelPrefix[Warning] + message)
+}
+
+// LogFatal logs a fatal level message and exits the application.
+func LogFatal(message string) {
+	log.Fatalln(logLevelPrefix[Fatal] + message)
+}
+
+// CustomLogInfo logs an info level message using a custom logger.
+func CustomLogInfo(logger *log.Logger, message string) {
+	logger.Println(logLevelPrefix[Info] + message)
+}
+
+// CustomLogDebug logs a debug level message using a custom logger.
+func CustomLogDebug(logger *log.Logger, message string) {
+	logger.Println(logLevelPrefix[Debug] + message)
+}
+
+// CustomLogWarning logs a warning level message using a custom logger.
+func CustomLogWarning(logger *log.Logger, message string) {
+	logger.Println(logLevelPrefix[Warning] + message)
+}
+
+// CustomLogFatal logs a fatal level message using a custom logger and exits the application.
+func CustomLogFatal(logger *log.Logger, message string) {
+	logger.Fatalln(logLevelPrefix[Fatal] + message)
+}
