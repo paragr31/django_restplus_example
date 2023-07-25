@@ -1,0 +1,45 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"runtime"
+	"strings"
+)
+
+type customLogger struct {
+	logger *log.Logger
+}
+
+func formatLineNumber(n int) string {
+	return fmt.Sprintf("%04d", n)
+}
+
+func (c *customLogger) Output(calldepth int, s string) error {
+	_, file, line, ok := runtime.Caller(calldepth)
+	if !ok {
+		file = "???"
+		line = 0
+	}
+
+	lineNumber := formatLineNumber(line)
+	fileLine := fmt.Sprintf("%s:%s", file, lineNumber)
+
+	return c.logger.Output(calldepth, strings.TrimSpace(fileLine)+" "+s)
+}
+
+func NewCustomLogger(out *os.File, prefix string, flag int) *customLogger {
+	return &customLogger{
+		logger: log.New(out, prefix, flag),
+	}
+}
+
+func main() {
+	// Create a custom logger with Lshortfile flag
+	logger := NewCustomLogger(os.Stdout, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC|log.Lshortfile)
+
+	// Example log statements
+	logger.Println("This is a sample log message.")
+	logger.Println("Another log message.")
+}
