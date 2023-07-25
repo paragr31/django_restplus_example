@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"runtime"
@@ -9,17 +10,16 @@ import (
 	"time"
 )
 
-type customLogger struct {
-	*log.Logger
-	timeFormat string
+type customWriter struct {
+	io.Writer
 }
 
 func formatLineNumber(n int) string {
 	return fmt.Sprintf("%04d", n)
 }
 
-func (c *customLogger) Output(calldepth int, s string) error {
-	_, file, line, ok := runtime.Caller(calldepth)
+func (w customWriter) Write(p []byte) (n int, err error) {
+	_, file, line, ok := runtime.Caller(5) // Adjust calldepth to get the correct file and line info
 	if !ok {
 		file = "???"
 		line = 0
@@ -28,25 +28,17 @@ func (c *customLogger) Output(calldepth int, s string) error {
 	lineNumber := formatLineNumber(line)
 	fileLine := fmt.Sprintf("%s:%s", file, lineNumber)
 
-	// Get the current time in the specified format
-	now := time.Now().UTC().Format(c.timeFormat)
+	now := time.Now().UTC().Format("2006-01-02 15:04:05")
+	msg := fmt.Sprintf("%s %s %s", now, fileLine, p)
 
-	return c.Logger.Output(calldepth, fmt.Sprintf("%s %s %s", now, strings.TrimSpace(fileLine), s))
-}
-
-func NewCustomLogger(out *os.File, prefix string, flag int, timeFormat string) *customLogger {
-	return &customLogger{
-		Logger:     log.New(out, prefix, flag),
-		timeFormat: timeFormat,
-	}
+	return w.Writer.Write([]byte(msg))
 }
 
 func main() {
 	// Create a custom logger with Lshortfile flag and custom time format
-	logger := NewCustomLogger(os.Stdout, "", log.Ldate|log.Ltime|log.Lmicroseconds, "2006-01-02 15:04:05")
+	logger := log.New(customWriter{os.Stdout}, "", log.Ldate|log.Ltime|log.Lmicroseconds)
 
 	// Example log statements
 	logger.Println("This is a sample log message.")
 	logger.Println("Another log message.")
 }
-
