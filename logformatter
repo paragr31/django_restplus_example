@@ -49,3 +49,4 @@ func main() {
 	logger.Println("This is a sample log message.")
 	logger.Println("Another log message.")
 }
+
