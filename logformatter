@@ -6,10 +6,12 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"time"
 )
 
 type customLogger struct {
 	*log.Logger
+	timeFormat string
 }
 
 func formatLineNumber(n int) string {
@@ -26,18 +28,22 @@ func (c *customLogger) Output(calldepth int, s string) error {
 	lineNumber := formatLineNumber(line)
 	fileLine := fmt.Sprintf("%s:%s", file, lineNumber)
 
-	return c.Logger.Output(calldepth, strings.TrimSpace(fileLine)+" "+s)
+	// Get the current time in the specified format
+	now := time.Now().UTC().Format(c.timeFormat)
+
+	return c.Logger.Output(calldepth, fmt.Sprintf("%s %s %s", now, strings.TrimSpace(fileLine), s))
 }
 
-func NewCustomLogger(out *os.File, prefix string, flag int) *customLogger {
+func NewCustomLogger(out *os.File, prefix string, flag int, timeFormat string) *customLogger {
 	return &customLogger{
-		Logger: log.New(out, prefix, flag),
+		Logger:     log.New(out, prefix, flag),
+		timeFormat: timeFormat,
 	}
 }
 
 func main() {
-	// Create a custom logger with Lshortfile flag
-	logger := NewCustomLogger(os.Stdout, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC|log.Lshortfile)
+	// Create a custom logger with Lshortfile flag and custom time format
+	logger := NewCustomLogger(os.Stdout, "", log.Ldate|log.Ltime|log.Lmicroseconds, "2006-01-02 15:04:05")
 
 	// Example log statements
 	logger.Println("This is a sample log message.")
