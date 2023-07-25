@@ -9,7 +9,7 @@ import (
 )
 
 type customLogger struct {
-	logger *log.Logger
+	*log.Logger
 }
 
 func formatLineNumber(n int) string {
@@ -26,12 +26,12 @@ func (c *customLogger) Output(calldepth int, s string) error {
 	lineNumber := formatLineNumber(line)
 	fileLine := fmt.Sprintf("%s:%s", file, lineNumber)
 
-	return c.logger.Output(calldepth, strings.TrimSpace(fileLine)+" "+s)
+	return c.Logger.Output(calldepth, strings.TrimSpace(fileLine)+" "+s)
 }
 
 func NewCustomLogger(out *os.File, prefix string, flag int) *customLogger {
 	return &customLogger{
-		logger: log.New(out, prefix, flag),
+		Logger: log.New(out, prefix, flag),
 	}
 }
 
