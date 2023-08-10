@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func createTarGz(sourceDir, targetFile string) error {
@@ -22,17 +23,25 @@ func createTarGz(sourceDir, targetFile string) error {
 	tarWriter := tar.NewWriter(gzipWriter)
 	defer tarWriter.Close()
 
+	baseDir := filepath.Dir(sourceDir)
 	return filepath.Walk(sourceDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		header, err := tar.FileInfoHeader(info, info.Name())
+		relPath, err := filepath.Rel(baseDir, path)
 		if err != nil {
 			return err
 		}
 
-		header.Name = path
+		header, err := tar.FileInfoHeader(info, relPath)
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			header.Name = relPath + "/"
+		}
 
 		if err := tarWriter.WriteHeader(header); err != nil {
 			return err
