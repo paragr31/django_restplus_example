@@ -7,8 +7,28 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 )
+
+func addFileToTar(writer *tar.Writer, path, name string, info os.FileInfo) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	header, err := tar.FileInfoHeader(info, "")
+	if err != nil {
+		return err
+	}
+	header.Name = name
+
+	if err := writer.WriteHeader(header); err != nil {
+		return err
+	}
+
+	_, err = io.Copy(writer, file)
+	return err
+}
 
 func createTarGz(sourceDir, targetFile string) error {
 	tarFile, err := os.Create(targetFile)
@@ -23,43 +43,40 @@ func createTarGz(sourceDir, targetFile string) error {
 	tarWriter := tar.NewWriter(gzipWriter)
 	defer tarWriter.Close()
 
-	baseDir := filepath.Dir(sourceDir)
-	return filepath.Walk(sourceDir, func(path string, info os.FileInfo, err error) error {
+	info, err := os.Stat(sourceDir)
+	if err != nil {
+		return err
+	}
+
+	baseDir := filepath.Base(sourceDir)
+
+	if !info.IsDir() {
+		return fmt.Errorf("sourceDir must be a directory")
+	}
+
+	filepath.Walk(sourceDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		relPath, err := filepath.Rel(baseDir, path)
+		relPath, err := filepath.Rel(sourceDir, path)
 		if err != nil {
 			return err
 		}
 
-		header, err := tar.FileInfoHeader(info, relPath)
-		if err != nil {
-			return err
-		}
-
-		if info.IsDir() {
-			header.Name = relPath + "/"
-		}
-
-		if err := tarWriter.WriteHeader(header); err != nil {
-			return err
-		}
-
-		if !info.Mode().IsRegular() {
+		if relPath == "." {
 			return nil
 		}
 
-		file, err := os.Open(path)
-		if err != nil {
-			return err
+		targetPath := filepath.Join(baseDir, relPath)
+		if info.IsDir() {
+			targetPath += "/"
 		}
-		defer file.Close()
 
-		_, err = io.Copy(tarWriter, file)
-		return err
+		return addFileToTar(tarWriter, path, targetPath, info)
 	})
+
+	return nil
 }
 
 func main() {
